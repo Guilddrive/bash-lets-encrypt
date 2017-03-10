@@ -1,0 +1,14 @@
+#!/bin/bash
+#for i in `mysql -uadmin -p\`cat /etc/psa/.psa.shadow\` psa -Ns -e "select name from domains"`; do /usr/sbin/plesk bin extension --exec letsencrypt cli.php -d "$i" -d www."$i"; done
+dbhost="localhost"
+dbuser="dbuser"
+dbpass="password"
+dbname="dbname"
+mysql -h "$dbhost" -u "$dbuser" -p"$dbpass" "$dbname" -e "select domain from example_table where example = 0" | while read domain guid; do
+echo "$domain"
+if [ "$domain" != "domain" ]
+then
+encrypt=$(/usr/sbin/plesk bin extension --exec letsencrypt cli.php -d "$domain" -d www."$domain" 2>&1)
+mysql -h "$dbhost" -u "$dbuser" -p"$dbpass" "$dbname" -e "update any_table set cron_was_here=1, shell_response='$encrypt' where domain='$domain'"
+fi
+done
