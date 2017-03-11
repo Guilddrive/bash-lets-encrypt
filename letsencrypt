@@ -9,6 +9,11 @@ echo "$domain"
 if [ "$domain" != "domain" ]
 then
 encrypt=$(/usr/sbin/plesk bin extension --exec letsencrypt cli.php -d "$domain" -d www."$domain" 2>&1)
-mysql -h "$dbhost" -u "$dbuser" -p"$dbpass" "$dbname" -e "update any_table set cron_was_here=1, shell_response='$encrypt' where domain='$domain'"
+if [[ "$?" != 1 ]]
+then
+	mysql -h "$dbhost" -u "$dbuser" -p"$dbpass" "$dbname" -e "update any_table set cron_was_here=1, shell_response='success' where domain='$domain'"
+else
+	mysql -h "$dbhost" -u "$dbuser" -p"$dbpass" "$dbname" -e "update any_table set cron_was_here=0, shell_response='$encrypt' where domain='$domain'"
+fi
 fi
 done
